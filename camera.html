@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Earthly Camera</title>
+    <script>
+        let vidStream = null;
+
+        function openCam() {
+            let All_mediaDevices = navigator.mediaDevices;
+            if (!All_mediaDevices || !All_mediaDevices.getUserMedia) {
+                console.log("getUsermedia not supported.");
+                return;
+            }
+            All_mediaDevices.getUserMedia({
+                audio: false,
+                video: true
+            })
+                .then(function (stream) {
+                    vidStream = stream;
+                    var video = document.getElementById('videoCam');
+                    if ("srcObject" in video) {
+                        video.srcObject = stream;
+                    } else {
+                        video.src = window.URL.createObjectURL(stream);
+                    }
+                    video.onloadedmetadata = function (e) {
+                        video.play();
+                        resizeVideo();
+                    };
+                })
+                .catch(function (e) {
+                    console.log(e.name + ": " + e.message);
+                });
+        }
+
+        function resizeVideo() {
+            var video = document.getElementById('videoCam');
+            var cameraFrame = document.getElementById('camera-frame');
+            var frameWidth = cameraFrame.clientWidth;
+            var frameHeight = cameraFrame.clientHeight;
+            video.width = frameWidth;
+            video.height = frameHeight;
+        }
+
+        function capturePhoto() {
+            if (vidStream) {
+                var video = document.getElementById('videoCam');
+                var canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // Display the captured photo in the camera frame
+                var cameraFrame = document.getElementById('camera-frame');
+                cameraFrame.innerHTML = '';
+                cameraFrame.appendChild(canvas);
+
+                // Display the text above the captured photo
+                var textElement = document.createElement('p');
+                textElement.textContent = "bati kag nawng";
+                cameraFrame.appendChild(textElement);
+                
+                // Show the refresh button
+                var refreshButton = document.getElementById('refresh-button');
+                refreshButton.style.display = 'block';
+            }
+        }
+        
+        function refreshPage() {
+            // Reload the page to start over
+            location.reload();
+        }
+
+        // Automatically open the camera when the page loads
+        window.addEventListener('load', openCam);
+    </script>
+    <style>
+        body {
+            background-color: #f0e68c; /* Pale Green */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #camera-container {
+            width: 400px;
+            height: 400px;
+            background-color: #6b4226; /* Brown */
+            border: 10px solid #3b230b; /* Dark Brown */
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #camera-frame {
+            width: 90%;
+            height: 90%;
+            background-color: #00bfff; /* Deep Sky Blue */
+            border: 5px solid #007acc; /* Blue */
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #capture-button {
+            background-color: #4caf50; /* Green */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 70px;
+        }
+
+        #capture-button:hover {
+            background-color: #45a049; /* Darker Green */
+        }
+
+        #refresh-button {
+            display: none;
+            background-color: #4caf50; /* Green */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #refresh-button:hover {
+            background-color: #45a049; /* Darker Green */
+        }
+    </style>
+</head>
+<body>
+    <div id="camera-container">
+        <div id="camera-frame">
+            <video id="videoCam" autoplay></video>
+        </div>
+    </div>
+    <button id="capture-button" onclick="capturePhoto()">Capture Photo</button>
+    <button id="refresh-button" onclick="refreshPage()">Refresh</button>
+</body>
+</html>
